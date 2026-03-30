@@ -4,8 +4,10 @@ import { ChevronRight, ChevronLeft, CheckCircle2, BookOpen } from 'lucide-react'
 import { coursesData } from '../data/courses';
 import { getCustomCourses, recordVisit, isLessonComplete } from '../services/storage';
 import { useProgress } from '../hooks/useProgress';
+import { useI18n } from '../i18n';
 
 export default function LessonPage() {
+  const { language } = useI18n();
   const { id, lessonId } = useParams<{ id: string; lessonId: string }>();
   const navigate = useNavigate();
   const { markComplete, checkComplete } = useProgress();
@@ -26,6 +28,39 @@ export default function LessonPage() {
   if (!course || !lesson) return <Navigate to={`/course/${id}`} replace />;
 
   const done = checkComplete(course.id, lesson.id);
+  const content = {
+    kg: {
+      courses: 'Курстар',
+      markComplete: 'Аткарылды деп белгилөө',
+      completed: 'Сабак аткарылды',
+      nextLesson: 'Кийинки сабак',
+      doneNext: 'Аткарылды -> Кийинки',
+      previous: 'Мурунку',
+      next: 'Кийинки',
+      lessons: 'Курстун сабактары',
+    },
+    ru: {
+      courses: 'Курсы',
+      markComplete: 'Отметить как выполненное',
+      completed: 'Урок выполнен',
+      nextLesson: 'Следующий урок',
+      doneNext: 'Выполнено -> Далее',
+      previous: 'Предыдущий',
+      next: 'Следующий',
+      lessons: 'Уроки курса',
+    },
+    en: {
+      courses: 'Courses',
+      markComplete: 'Mark as complete',
+      completed: 'Lesson completed',
+      nextLesson: 'Next lesson',
+      doneNext: 'Done -> Next',
+      previous: 'Previous',
+      next: 'Next',
+      lessons: 'Course lessons',
+    },
+  } as const;
+  const t = content[language];
 
   const handleComplete = () => {
     if (!done) markComplete(course.id, lesson.id);
@@ -42,10 +77,10 @@ export default function LessonPage() {
       {/* Background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/8 blur-[100px] pointer-events-none -z-10" />
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-3 min-[360px]:px-4 py-6 sm:py-8 max-w-6xl">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-slate-500 mb-8 flex-wrap">
-          <Link to="/intensives" className="hover:text-slate-300 transition-colors">Курсы</Link>
+          <Link to="/intensives" className="hover:text-slate-300 transition-colors">{t.courses}</Link>
           <ChevronRight size={12} />
           <Link to={`/course/${course.id}`} className="hover:text-slate-300 transition-colors">{course.title}</Link>
           <ChevronRight size={12} />
@@ -74,7 +109,7 @@ export default function LessonPage() {
                 </span>
                 {done && <CheckCircle2 size={18} className="text-primary-light" />}
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-white mb-4 tracking-tight">{lesson.title}</h1>
+              <h1 className="text-xl min-[360px]:text-2xl md:text-3xl font-black text-white mb-4 tracking-tight">{lesson.title}</h1>
               <p className="text-slate-400 text-base leading-relaxed">{lesson.description}</p>
             </div>
 
@@ -83,24 +118,24 @@ export default function LessonPage() {
               {!done ? (
                 <button
                   onClick={handleMarkOnly}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary-light border border-primary/20 text-sm font-semibold hover:bg-primary/20 transition-all"
+                  className="w-full min-[420px]:w-auto flex items-center justify-center gap-2 px-4 min-[420px]:px-5 py-2.5 rounded-xl bg-primary/10 text-primary-light border border-primary/20 text-sm font-semibold hover:bg-primary/20 transition-all"
                 >
                   <CheckCircle2 size={16} />
-                  Отметить как выполненное
+                  {t.markComplete}
                 </button>
               ) : (
-                <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary/10 text-primary-light border border-primary/20 text-sm font-semibold">
+                <div className="w-full min-[420px]:w-auto flex items-center justify-center gap-2 px-4 min-[420px]:px-5 py-2.5 rounded-xl bg-primary/10 text-primary-light border border-primary/20 text-sm font-semibold">
                   <CheckCircle2 size={16} />
-                  Урок выполнен
+                  {t.completed}
                 </div>
               )}
 
               {nextLesson && (
                 <button
                   onClick={handleComplete}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white text-sm font-semibold shadow-glow-sm hover:shadow-glow transition-all"
+                  className="w-full min-[420px]:w-auto flex items-center justify-center gap-2 px-4 min-[420px]:px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white text-sm font-semibold shadow-glow-sm hover:shadow-glow transition-all"
                 >
-                  {done ? 'Следующий урок' : 'Выполнено → Далее'}
+                  {done ? t.nextLesson : t.doneNext}
                   <ChevronRight size={16} />
                 </button>
               )}
@@ -115,7 +150,7 @@ export default function LessonPage() {
                 >
                   <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                   <div>
-                    <div className="text-xs text-slate-600 mb-0.5">Предыдущий</div>
+                    <div className="text-xs text-slate-600 mb-0.5">{t.previous}</div>
                     <div>{prevLesson.title}</div>
                   </div>
                 </Link>
@@ -127,7 +162,7 @@ export default function LessonPage() {
                   className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group ml-auto text-right"
                 >
                   <div>
-                    <div className="text-xs text-slate-600 mb-0.5">Следующий</div>
+                    <div className="text-xs text-slate-600 mb-0.5">{t.next}</div>
                     <div>{nextLesson.title}</div>
                   </div>
                   <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
@@ -141,7 +176,7 @@ export default function LessonPage() {
             <div className="bg-card rounded-2xl border border-white/8 overflow-hidden">
               <div className="p-4 border-b border-white/8 flex items-center gap-2">
                 <BookOpen size={14} className="text-primary-light" />
-                <span className="text-sm font-semibold text-white">Уроки курса</span>
+                <span className="text-sm font-semibold text-white">{t.lessons}</span>
                 <span className="ml-auto text-xs text-slate-500">{lessons.length}</span>
               </div>
               <div className="divide-y divide-white/5 max-h-[60vh] overflow-y-auto">

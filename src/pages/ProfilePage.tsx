@@ -12,11 +12,14 @@ import {
 } from '../services/storage';
 import type { UserProfile } from '../types';
 import ProgressBar from '../components/ui/ProgressBar';
+import { useI18n } from '../i18n';
 
 export default function ProfilePage() {
+  const { language, locale } = useI18n();
   const [profile, setProfileState] = useState<UserProfile>(() => {
     const p = getProfile();
-    return p ?? { displayName: 'Пользователь', createdAt: new Date().toISOString() };
+    const fallbackName = language === 'en' ? 'User' : language === 'kg' ? 'Колдонуучу' : 'Пользователь';
+    return p ?? { displayName: fallbackName, createdAt: new Date().toISOString() };
   });
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile.displayName);
@@ -53,17 +56,48 @@ export default function ProfilePage() {
     .map(w => w[0]?.toUpperCase() ?? '')
     .join('');
 
-  const memberSince = new Date(profile.createdAt).toLocaleDateString('ru-RU', {
+  const memberSince = new Date(profile.createdAt).toLocaleDateString(locale, {
     year: 'numeric', month: 'long', day: 'numeric',
   });
+
+  const content = {
+    kg: {
+      memberSince: 'Катталган күнү',
+      stats: ['Башталган курстар', 'Өтүлгөн сабактар', 'Өз курстары'],
+      progressByCourses: 'Курстар боюнча прогресс',
+      history: 'Окуу тарыхы',
+      myCourses: 'Менин курстарым',
+      empty: 'Сиз азырынча бир да курс баштаган жоксуз',
+      toCourses: 'Курстарга өтүү ->',
+    },
+    ru: {
+      memberSince: 'Участник с',
+      stats: ['Начато курсов', 'Уроков пройдено', 'Своих курсов'],
+      progressByCourses: 'Прогресс по курсам',
+      history: 'История обучения',
+      myCourses: 'Мои курсы',
+      empty: 'Вы ещё не начали ни одного курса',
+      toCourses: 'Перейти к курсам ->',
+    },
+    en: {
+      memberSince: 'Member since',
+      stats: ['Started courses', 'Completed lessons', 'My courses'],
+      progressByCourses: 'Course progress',
+      history: 'Learning history',
+      myCourses: 'My courses',
+      empty: 'You have not started any course yet',
+      toCourses: 'Go to courses ->',
+    },
+  } as const;
+  const t = content[language];
 
   return (
     <div className="min-h-screen pb-24">
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/8 blur-[100px] pointer-events-none -z-10" />
 
-      <div className="container mx-auto px-4 py-10 max-w-4xl space-y-8">
+      <div className="container mx-auto px-3 min-[360px]:px-4 py-8 sm:py-10 max-w-4xl space-y-8">
         {/* Profile header */}
-        <div className="flex items-center gap-6 p-6 rounded-2xl bg-card border border-white/8">
+        <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-2xl bg-card border border-white/8">
           {/* Avatar */}
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl font-black flex-shrink-0 shadow-glow-sm">
             {initials || <User size={28} />}
@@ -95,16 +129,16 @@ export default function ProfilePage() {
                 </button>
               </div>
             )}
-            <p className="text-slate-500 text-sm">Участник с {memberSince}</p>
+            <p className="text-slate-500 text-sm">{t.memberSince} {memberSince}</p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-4">
           {[
-            { label: 'Начато курсов', value: startedCourses.length, icon: BookOpen },
-            { label: 'Уроков пройдено', value: progress.length, icon: CheckCircle2 },
-            { label: 'Своих курсов', value: customCourses.length, icon: Plus },
+            { label: t.stats[0], value: startedCourses.length, icon: BookOpen },
+            { label: t.stats[1], value: progress.length, icon: CheckCircle2 },
+            { label: t.stats[2], value: customCourses.length, icon: Plus },
           ].map(({ label, value, icon: Icon }) => (
             <div key={label} className="p-5 rounded-2xl bg-card border border-white/8 text-center">
               <Icon size={20} className="text-primary-light mx-auto mb-2" />
@@ -117,7 +151,7 @@ export default function ProfilePage() {
         {/* Course progress */}
         {startedCourses.length > 0 && (
           <div>
-            <h2 className="text-lg font-bold text-white mb-4">Прогресс по курсам</h2>
+            <h2 className="text-lg font-bold text-white mb-4">{t.progressByCourses}</h2>
             <div className="space-y-3">
               {startedCourses.map(course => {
                 const total = course.lessons?.length ?? 0;
@@ -143,12 +177,12 @@ export default function ProfilePage() {
         {/* History */}
         {lastVisited.length > 0 && (
           <div>
-            <h2 className="text-lg font-bold text-white mb-4">История обучения</h2>
+            <h2 className="text-lg font-bold text-white mb-4">{t.history}</h2>
             <div className="space-y-2">
               {lastVisited.slice(0, 8).map((entry, i) => {
                 const course = allCourses.find(c => c.id === entry.courseId);
                 const lesson = course?.lessons?.find(l => l.id === entry.lessonId);
-                const date = new Date(entry.visitedAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+                const date = new Date(entry.visitedAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
                 const link = lesson
                   ? `/course/${entry.courseId}/lesson/${entry.lessonId}`
                   : `/course/${entry.courseId}`;
@@ -176,7 +210,7 @@ export default function ProfilePage() {
         {/* My courses */}
         {customCourses.length > 0 && (
           <div>
-            <h2 className="text-lg font-bold text-white mb-4">Мои курсы</h2>
+            <h2 className="text-lg font-bold text-white mb-4">{t.myCourses}</h2>
             <div className="space-y-3">
               {customCourses.map(course => (
                 <div key={course.id} className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-white/8">
@@ -199,9 +233,9 @@ export default function ProfilePage() {
         {startedCourses.length === 0 && lastVisited.length === 0 && customCourses.length === 0 && (
           <div className="text-center py-20 text-slate-600">
             <BookOpen size={40} className="mx-auto mb-4 opacity-30" />
-            <p className="mb-4">Вы ещё не начали ни одного курса</p>
+            <p className="mb-4">{t.empty}</p>
             <Link to="/intensives" className="text-primary-light hover:text-white transition-colors text-sm font-semibold">
-              Перейти к курсам →
+              {t.toCourses}
             </Link>
           </div>
         )}

@@ -1,3 +1,5 @@
+import { useI18n } from '../../i18n';
+
 interface Props {
   value: number; // 0..1
   className?: string;
@@ -5,12 +7,14 @@ interface Props {
 }
 
 export default function ProgressBar({ value, className = '', showLabel = false }: Props) {
+  const { language } = useI18n();
   const pct = Math.round(value * 100);
+  const label = language === 'en' ? 'Progress' : language === 'kg' ? 'Прогресс' : 'Прогресс';
   return (
     <div className={`w-full ${className}`}>
       {showLabel && (
         <div className="flex justify-between text-xs text-slate-400 mb-1">
-          <span>Прогресс</span>
+          <span>{label}</span>
           <span>{pct}%</span>
         </div>
       )}

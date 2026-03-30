@@ -3,21 +3,26 @@ import { Link } from 'react-router-dom';
 import type { Course } from '../../data/courses';
 import ProgressBar from './ProgressBar';
 import { getCourseProgress } from '../../services/storage';
+import { lessonWord, useI18n } from '../../i18n';
 
 interface Props {
   course: Course;
 }
 
 export default function CourseCard({ course }: Props) {
+  const { language } = useI18n();
   const totalLessons = course.lessons?.length ?? 0;
   const progress = getCourseProgress(course.id, totalLessons);
   const hasProgress = progress > 0;
 
-  const typeLabelMap: Record<Course['type'], string> = {
-    'intensive': 'ИНТЕНСИВ',
-    'master-class': 'МАСТЕР-КЛАСС',
-    'user-added': 'МОЙ КУРС',
+  const typeLabelMap: Record<Course['type'], Record<'kg' | 'ru' | 'en', string>> = {
+    'intensive': { kg: 'ИНТЕНСИВ', ru: 'ИНТЕНСИВ', en: 'INTENSIVE' },
+    'master-class': { kg: 'МАСТЕР-КЛАСС', ru: 'МАСТЕР-КЛАСС', en: 'MASTER CLASS' },
+    'user-added': { kg: 'МЕНИН КУРСУМ', ru: 'МОЙ КУРС', en: 'MY COURSE' },
   };
+
+  const archiveLabel = language === 'en' ? 'ARCHIVE' : language === 'kg' ? 'АРХИВ' : 'АРХИВ';
+  const detailsLabel = language === 'en' ? 'Details' : language === 'kg' ? 'Толугураак' : 'Подробнее';
 
   return (
     <Link
@@ -44,16 +49,16 @@ export default function CourseCard({ course }: Props) {
           {course.isArchive && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-500/10 text-slate-500 text-xs font-bold tracking-wider border border-slate-500/20">
               <Archive size={10} />
-              АРХИВ
+              {archiveLabel}
             </span>
           )}
           {course.isUserAdded && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary-light text-xs font-bold tracking-wider border border-primary/20">
-              МОЙ КУРС
+              {language === 'en' ? 'MY COURSE' : language === 'kg' ? 'МЕНИН КУРСУМ' : 'МОЙ КУРС'}
             </span>
           )}
           <span className="inline-flex px-2.5 py-1 rounded-lg bg-white/5 text-slate-400 text-xs font-bold tracking-wider border border-white/8">
-            {typeLabelMap[course.type]}
+            {typeLabelMap[course.type][language]}
           </span>
         </div>
 
@@ -75,12 +80,12 @@ export default function CourseCard({ course }: Props) {
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-light group-hover:text-white transition-colors">
               {course.isVip ? <Lock size={13} /> : null}
-              Подробнее
+              {detailsLabel}
               <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </span>
             {totalLessons > 0 && (
               <span className="text-xs text-slate-600">
-                {totalLessons} {totalLessons === 1 ? 'урок' : totalLessons < 5 ? 'урока' : 'уроков'}
+                {totalLessons} {lessonWord(totalLessons, language)}
               </span>
             )}
           </div>

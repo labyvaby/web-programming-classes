@@ -1,7 +1,69 @@
 import { Link } from 'react-router-dom';
 import { Play, Send, Plus } from 'lucide-react';
+import { useI18n } from '../../i18n';
 
 export default function Footer() {
+  const { language } = useI18n();
+
+  const content = {
+    kg: {
+      description: 'Кыргызстандагы веб-иштеп чыгуу боюнча мыкты окутуу порталы. Окуунун биринчи күнүнөн тартып практика.',
+      navigation: 'Навигация',
+      subscription: 'Жазылуу',
+      links: 'Шилтемелер',
+      addCourse: 'Курс кошуу',
+      courses: 'Курстар',
+      intensives: 'Интенсивдер',
+      masterClasses: 'Мастер-класстар',
+      updates: 'Жаңылыктар',
+      information: 'Маалымат',
+      agreement: 'Келишим',
+      privacy: 'Купуялуулук',
+      legal: 'Реквизиттер',
+      rights: 'Бардык укуктар корголгон',
+      writeToUs: 'Бизге жазуу',
+      reviews: 'Пикирлер',
+    },
+    ru: {
+      description: 'Лучший обучающий портал по веб-разработке в Кыргызстане. Практика с первого дня обучения.',
+      navigation: 'Навигация',
+      subscription: 'Подписка',
+      links: 'Ссылки',
+      addCourse: 'Добавить курс',
+      courses: 'Курсы',
+      intensives: 'Интенсивы',
+      masterClasses: 'Мастер-классы',
+      updates: 'Обновления',
+      information: 'Информация',
+      agreement: 'Соглашение',
+      privacy: 'Конфиденциальность',
+      legal: 'Реквизиты',
+      rights: 'Все права защищены',
+      writeToUs: 'Написать нам',
+      reviews: 'Отзывы',
+    },
+    en: {
+      description: 'A leading web development learning platform in Kyrgyzstan. Hands-on practice from day one.',
+      navigation: 'Navigation',
+      subscription: 'Plans',
+      links: 'Links',
+      addCourse: 'Add course',
+      courses: 'Courses',
+      intensives: 'Intensives',
+      masterClasses: 'Master classes',
+      updates: 'Updates',
+      information: 'Information',
+      agreement: 'Agreement',
+      privacy: 'Privacy',
+      legal: 'Legal details',
+      rights: 'All rights reserved',
+      writeToUs: 'Contact us',
+      reviews: 'Reviews',
+    },
+  } as const;
+
+  const t = content[language];
+
   return (
     <footer className="relative bg-background border-t border-white/8 pt-16 pb-8 overflow-hidden">
       {/* Background glow */}
@@ -16,7 +78,7 @@ export default function Footer() {
               <span className="text-xl font-black gradient-text tracking-tight">lessons</span>
             </Link>
             <p className="text-slate-500 text-sm leading-relaxed">
-              Лучший обучающий портал по веб-разработке. Практика с первого дня обучения.
+              {t.description}
             </p>
             <div className="flex space-x-3 pt-2">
               <a
@@ -40,22 +102,22 @@ export default function Footer() {
 
           {/* Navigation */}
           <div>
-            <h3 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">Навигация</h3>
+            <h3 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">{t.navigation}</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link to="/plans" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Подписка
+                  {t.subscription}
                 </Link>
               </li>
               <li>
                 <Link to="/links" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Ссылки
+                  {t.links}
                 </Link>
               </li>
               <li>
                 <Link to="/add-course" className="inline-flex items-center gap-1.5 text-slate-500 hover:text-primary-light text-sm transition-colors">
                   <Plus size={13} />
-                  Добавить курс
+                  {t.addCourse}
                 </Link>
               </li>
             </ul>
@@ -63,21 +125,21 @@ export default function Footer() {
 
           {/* Courses */}
           <div>
-            <h3 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">Курсы</h3>
+            <h3 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">{t.courses}</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link to="/intensives" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Интенсивы
+                  {t.intensives}
                 </Link>
               </li>
               <li>
                 <Link to="/intensives" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Мастер-классы
+                  {t.masterClasses}
                 </Link>
               </li>
               <li>
                 <Link to="/changelog" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Обновления
+                  {t.updates}
                 </Link>
               </li>
             </ul>
@@ -85,21 +147,21 @@ export default function Footer() {
 
           {/* Info */}
           <div>
-            <h3 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">Информация</h3>
+            <h3 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">{t.information}</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link to="/docs/agreement" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Соглашение
+                  {t.agreement}
                 </Link>
               </li>
               <li>
                 <Link to="/docs/privacy" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Конфиденциальность
+                  {t.privacy}
                 </Link>
               </li>
               <li>
                 <Link to="/docs/legal" className="text-slate-500 hover:text-slate-200 text-sm transition-colors">
-                  Реквизиты
+                  {t.legal}
                 </Link>
               </li>
             </ul>
@@ -107,7 +169,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-slate-600 text-sm">
-          <p>htmllessons © 2017–{new Date().getFullYear()} · Все права защищены</p>
+          <p>htmllessons © 2017–{new Date().getFullYear()} · {t.rights}</p>
           <div className="flex space-x-6 shrink-0">
             <a
               href="https://t.me/red_support_chat"
@@ -115,7 +177,7 @@ export default function Footer() {
               rel="noreferrer"
               className="hover:text-slate-300 transition-colors"
             >
-              Написать нам
+              {t.writeToUs}
             </a>
             <a
               href="https://t.me/s/htmllessons_reviews"
@@ -123,7 +185,7 @@ export default function Footer() {
               rel="noreferrer"
               className="hover:text-slate-300 transition-colors"
             >
-              Отзывы
+              {t.reviews}
             </a>
           </div>
         </div>

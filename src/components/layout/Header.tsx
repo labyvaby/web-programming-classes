@@ -1,15 +1,88 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X, User, Plus } from 'lucide-react';
+import { useI18n, type Language } from '../../i18n';
+
+const languageOptions: Array<{ value: Language; label: string }> = [
+  { value: 'kg', label: 'кыргызский' },
+  { value: 'ru', label: 'ру' },
+  { value: 'en', label: 'en' },
+];
+
+const content = {
+  kg: {
+    nav: [
+      { name: 'Курстар', path: '/intensives' },
+      { name: 'Жазылуу', path: '/plans' },
+      { name: 'Жанылыктар', path: '/changelog' },
+    ],
+    add: 'Кошуу',
+    cabinet: 'Кабинет',
+    addCourse: 'Курс кошуу',
+    profile: 'Жеке кабинет',
+  },
+  ru: {
+    nav: [
+      { name: 'Курсы', path: '/intensives' },
+      { name: 'Подписка', path: '/plans' },
+      { name: 'Обновления', path: '/changelog' },
+    ],
+    add: 'Добавить',
+    cabinet: 'Кабинет',
+    addCourse: 'Добавить курс',
+    profile: 'Личный кабинет',
+  },
+  en: {
+    nav: [
+      { name: 'Courses', path: '/intensives' },
+      { name: 'Plans', path: '/plans' },
+      { name: 'Updates', path: '/changelog' },
+    ],
+    add: 'Add',
+    cabinet: 'Profile',
+    addCourse: 'Add course',
+    profile: 'Personal account',
+  },
+} as const;
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { language, setLanguage } = useI18n();
 
-  const navLinks = [
-    { name: 'Курсы', path: '/intensives' },
-    { name: 'Подписка', path: '/plans' },
-    { name: 'Обновления', path: '/changelog' },
-  ];
+  const t = content[language];
+
+  const LanguageSwitch = ({ mobile = false }: { mobile?: boolean }) => (
+    <div
+      className={`inline-flex items-center rounded-xl border border-white/10 bg-white/[0.03] p-1 ${
+        mobile ? 'w-full' : ''
+      }`}
+      role="tablist"
+      aria-label="Language switcher"
+    >
+      {languageOptions.map((option) => {
+        const isActive = language === option.value;
+
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => setLanguage(option.value)}
+            className={`relative min-w-0 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-sm font-semibold rounded-lg transition-all duration-300 ${
+              mobile ? 'flex-1' : ''
+            } ${
+              isActive
+                ? 'text-white bg-gradient-to-r from-primary to-primary-dark shadow-glow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span className="block truncate">{option.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-background/85 border-b border-white/8">
@@ -28,7 +101,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex flex-1 items-center justify-center space-x-1">
-            {navLinks.map((link) => (
+            {t.nav.map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
@@ -47,19 +120,20 @@ export default function Header() {
 
           {/* Desktop actions */}
           <div className="hidden md:flex items-center gap-2">
+            <LanguageSwitch />
             <Link
               to="/add-course"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 font-medium transition-all"
             >
               <Plus size={16} />
-              <span>Добавить</span>
+              <span>{t.add}</span>
             </Link>
             <Link
               to="/profile"
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white text-sm font-semibold shadow-glow-sm hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
             >
               <User size={16} />
-              <span>Кабинет</span>
+              <span>{t.cabinet}</span>
             </Link>
           </div>
 
@@ -76,7 +150,10 @@ export default function Header() {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-card/95 backdrop-blur-xl border-b border-white/8 p-4 space-y-1">
-          {navLinks.map((link) => (
+          <div className="pb-3">
+            <LanguageSwitch mobile />
+          </div>
+          {t.nav.map((link) => (
             <NavLink
               key={link.path}
               to={link.path}
@@ -96,7 +173,7 @@ export default function Header() {
             className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-slate-300 hover:bg-white/5 font-medium transition-all"
           >
             <Plus size={16} />
-            Добавить курс
+            {t.addCourse}
           </Link>
           <Link
             to="/profile"
@@ -104,7 +181,7 @@ export default function Header() {
             className="flex items-center gap-2 px-4 py-3 rounded-xl bg-primary/10 text-primary-light text-sm font-semibold hover:bg-primary/20 transition-all"
           >
             <User size={16} />
-            Личный кабинет
+            {t.profile}
           </Link>
         </div>
       )}

@@ -177,7 +177,7 @@ export default function PlansPage() {
             return (
               <div
                 key={plan.name}
-                className={`relative flex flex-col rounded-2xl bg-card border ${plan.borderColor} p-6 transition-all duration-300 ${plan.featured ? 'shadow-glow scale-[1.02]' : 'hover:border-primary/20 hover:shadow-glow-sm'}`}
+                className={`relative flex flex-col rounded-2xl bg-card border ${plan.borderColor} p-6 transition-all duration-300 ${plan.featured ? 'shadow-glow md:scale-[1.02]' : 'hover:border-primary/20 hover:shadow-glow-sm'}`}
               >
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">

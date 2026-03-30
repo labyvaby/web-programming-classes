@@ -1,5 +1,6 @@
 import type { UserProgress, UserProfile, LastVisited } from '../types';
 import type { Course } from '../data/courses';
+import { deleteMedia } from './mediaStorage';
 
 const STORAGE_KEY = 'htmllessons_v1';
 
@@ -29,11 +30,13 @@ export function readStore(): StorageShape {
   }
 }
 
-function writeStore(data: StorageShape): void {
+function writeStore(data: StorageShape): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
   } catch {
     // storage full or unavailable
+    return false;
   }
 }
 
@@ -72,14 +75,28 @@ export function getCustomCourses(): Course[] {
   return readStore().customCourses;
 }
 
-export function addCustomCourse(course: Course): void {
+export function addCustomCourse(course: Course): boolean {
   const store = readStore();
   store.customCourses.push(course);
-  writeStore(store);
+  return writeStore(store);
 }
 
 export function removeCustomCourse(id: string): void {
   const store = readStore();
+  const course = store.customCourses.find(c => c.id === id);
+  if (course) {
+    // clean up IndexedDB media entries
+    const mediaKeys: string[] = [];
+    if (course.previewVideoUrl?.startsWith('idb:')) {
+      mediaKeys.push(course.previewVideoUrl.slice(4));
+    }
+    for (const lesson of course.lessons ?? []) {
+      if (lesson.videoUrl?.startsWith('idb:')) {
+        mediaKeys.push(lesson.videoUrl.slice(4));
+      }
+    }
+    for (const key of mediaKeys) deleteMedia(key);
+  }
   store.customCourses = store.customCourses.filter(c => c.id !== id);
   writeStore(store);
 }
@@ -98,4 +115,20 @@ export function recordVisit(courseId: string, lessonId?: string): void {
 
 export function getLastVisited(): LastVisited[] {
   return readStore().lastVisited;
+}
+
+export async function clearAllData(): Promise<void> {
+  const store = readStore();
+  // delete all IndexedDB media
+  for (const course of store.customCourses) {
+    if (course.previewVideoUrl?.startsWith('idb:')) {
+      await deleteMedia(course.previewVideoUrl.slice(4));
+    }
+    for (const lesson of course.lessons ?? []) {
+      if (lesson.videoUrl?.startsWith('idb:')) {
+        await deleteMedia(lesson.videoUrl.slice(4));
+      }
+    }
+  }
+  localStorage.removeItem(STORAGE_KEY);
 }

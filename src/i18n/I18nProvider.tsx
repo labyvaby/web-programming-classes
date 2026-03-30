@@ -18,15 +18,20 @@ const localeByLanguage: Record<Language, string> = {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('ru');
-
-  useEffect(() => {
+function getInitialLanguage(): Language {
+  try {
     const savedLanguage = localStorage.getItem(STORAGE_KEY);
     if (savedLanguage === 'kg' || savedLanguage === 'ru' || savedLanguage === 'en') {
-      setLanguageState(savedLanguage);
+      return savedLanguage;
     }
-  }, []);
+  } catch {
+    // localStorage is unavailable
+  }
+  return 'ru';
+}
+
+export function I18nProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, language);

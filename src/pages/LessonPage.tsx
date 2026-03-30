@@ -5,6 +5,8 @@ import { coursesData } from '../data/courses';
 import { getCustomCourses, recordVisit, isLessonComplete } from '../services/storage';
 import { useProgress } from '../hooks/useProgress';
 import { useI18n } from '../i18n';
+import { toYouTubeSearchEmbedUrl } from '../utils/youtube';
+import { useMediaUrl } from '../hooks/useMediaUrl';
 
 export default function LessonPage() {
   const { language } = useI18n();
@@ -28,6 +30,11 @@ export default function LessonPage() {
   if (!course || !lesson) return <Navigate to={`/course/${id}`} replace />;
 
   const done = checkComplete(course.id, lesson.id);
+  const rawLessonVideoUrl = (lesson.videoUrl && lesson.videoUrl.length > 0)
+    ? lesson.videoUrl
+    : toYouTubeSearchEmbedUrl(`${course.title} ${lesson.title} tutorial`);
+  const lessonVideoUrl = useMediaUrl(rawLessonVideoUrl);
+  const isIframeSource = Boolean(lessonVideoUrl?.includes('youtube.com/embed'));
   const content = {
     kg: {
       courses: 'Курстар',
@@ -91,14 +98,23 @@ export default function LessonPage() {
           {/* Main content */}
           <div className="flex-1 min-w-0">
             {/* Video */}
-            <div className="rounded-2xl overflow-hidden border border-white/8 shadow-glow mb-8 aspect-video">
-              <iframe
-                src={lesson.videoUrl}
-                title={lesson.title}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
+            <div className="rounded-2xl overflow-hidden border border-white/8 shadow-glow mb-8 aspect-video bg-black/30">
+              {lessonVideoUrl && (isIframeSource ? (
+                <iframe
+                  src={lessonVideoUrl}
+                  title={lesson.title}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  src={lessonVideoUrl}
+                  className="w-full h-full"
+                  controls
+                  preload="metadata"
+                />
+              ))}
             </div>
 
             {/* Title & description */}

@@ -5,6 +5,8 @@ import { coursesData } from '../data/courses';
 import { getCustomCourses, recordVisit, getCourseProgress, isLessonComplete } from '../services/storage';
 import ProgressBar from '../components/ui/ProgressBar';
 import { useI18n } from '../i18n';
+import { toYouTubeSearchEmbedUrl } from '../utils/youtube';
+import { useMediaUrl } from '../hooks/useMediaUrl';
 
 export default function CourseDetailPage() {
   const { language } = useI18n();
@@ -22,6 +24,12 @@ export default function CourseDetailPage() {
   const totalLessons = lessons.length;
   const progress = getCourseProgress(course.id, totalLessons);
   const completedCount = Math.round(progress * totalLessons);
+  const rawPreviewUrl = (course.previewVideoUrl && course.previewVideoUrl.length > 0)
+    ? course.previewVideoUrl
+    : toYouTubeSearchEmbedUrl(`${course.title} full course`);
+  const previewVideoUrl = useMediaUrl(rawPreviewUrl);
+  const isPreviewImage = Boolean(previewVideoUrl?.startsWith('data:image/'));
+  const isPreviewIframe = !isPreviewImage && Boolean(previewVideoUrl?.includes('youtube.com/embed'));
 
   const typeLabelMap: Record<string, Record<'kg' | 'ru' | 'en', string>> = {
     'intensive': { kg: 'ИНТЕНСИВ', ru: 'ИНТЕНСИВ', en: 'INTENSIVE' },
@@ -92,16 +100,27 @@ export default function CourseDetailPage() {
           <p className="text-slate-400 text-lg leading-relaxed max-w-2xl">{course.description}</p>
         </div>
 
-        {/* Video preview */}
-        {course.previewVideoUrl && (
+        {/* Video/image preview */}
+        {previewVideoUrl && (
           <div className="mb-10 rounded-2xl overflow-hidden border border-white/8 shadow-glow aspect-video">
-            <iframe
-              src={course.previewVideoUrl}
-              title={course.title}
-              className="w-full h-full"
-              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
+            {isPreviewIframe ? (
+              <iframe
+                src={previewVideoUrl}
+                title={course.title}
+                className="w-full h-full"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            ) : isPreviewImage ? (
+              <img src={previewVideoUrl} alt={course.title} className="w-full h-full object-cover" />
+            ) : (
+              <video
+                src={previewVideoUrl}
+                className="w-full h-full"
+                controls
+                preload="metadata"
+              />
+            )}
           </div>
         )}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { User, BookOpen, CheckCircle2, Trash2, Edit2, Save, Plus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { User, BookOpen, CheckCircle2, Trash2, Edit2, Save, Plus, AlertTriangle } from 'lucide-react';
 import { coursesData } from '../data/courses';
 import {
   getProfile, setProfile,
@@ -9,6 +9,7 @@ import {
   getCustomCourses,
   removeCustomCourse,
   getCourseProgress,
+  clearAllData,
 } from '../services/storage';
 import type { UserProfile } from '../types';
 import ProgressBar from '../components/ui/ProgressBar';
@@ -16,6 +17,7 @@ import { useI18n } from '../i18n';
 
 export default function ProfilePage() {
   const { language, locale } = useI18n();
+  const navigate = useNavigate();
   const [profile, setProfileState] = useState<UserProfile>(() => {
     const p = getProfile();
     const fallbackName = language === 'en' ? 'User' : language === 'kg' ? 'Колдонуучу' : 'Пользователь';
@@ -24,6 +26,7 @@ export default function ProfilePage() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile.displayName);
   const [customCourses, setCustomCourses] = useState(() => getCustomCourses());
+  const [confirmClear, setConfirmClear] = useState(false);
   const progress = getProgress();
   const lastVisited = getLastVisited();
 
@@ -42,6 +45,11 @@ export default function ProfilePage() {
   const handleRemoveCourse = (id: string) => {
     removeCustomCourse(id);
     setCustomCourses(getCustomCourses());
+  };
+
+  const handleClearAll = async () => {
+    await clearAllData();
+    navigate(0); // reload page to reset all state
   };
 
   const allCourses = [...coursesData, ...customCourses];
@@ -69,6 +77,11 @@ export default function ProfilePage() {
       myCourses: 'Менин курстарым',
       empty: 'Сиз азырынча бир да курс баштаган жоксуз',
       toCourses: 'Курстарга өтүү ->',
+      dangerZone: 'Коркунучтуу аймак',
+      clearAll: 'Бардык маалыматты тазалоо',
+      clearAllHint: 'Прогресс, тарых жана кошулган курстардын баары өчүрүлөт. Кайтарып алуу мүмкүн эмес.',
+      clearConfirm: 'Ырастоо — баарын өчүрүү',
+      clearCancel: 'Жок, артка',
     },
     ru: {
       memberSince: 'Участник с',
@@ -78,6 +91,11 @@ export default function ProfilePage() {
       myCourses: 'Мои курсы',
       empty: 'Вы ещё не начали ни одного курса',
       toCourses: 'Перейти к курсам ->',
+      dangerZone: 'Опасная зона',
+      clearAll: 'Очистить все данные',
+      clearAllHint: 'Удалит весь прогресс, историю и добавленные курсы. Действие необратимо.',
+      clearConfirm: 'Подтвердить — удалить всё',
+      clearCancel: 'Нет, отмена',
     },
     en: {
       memberSince: 'Member since',
@@ -87,6 +105,11 @@ export default function ProfilePage() {
       myCourses: 'My courses',
       empty: 'You have not started any course yet',
       toCourses: 'Go to courses ->',
+      dangerZone: 'Danger zone',
+      clearAll: 'Clear all data',
+      clearAllHint: 'Deletes all progress, history and added courses. This action is irreversible.',
+      clearConfirm: 'Confirm — delete everything',
+      clearCancel: 'No, cancel',
     },
   } as const;
   const t = content[language];
@@ -239,6 +262,40 @@ export default function ProfilePage() {
             </Link>
           </div>
         )}
+
+        {/* Danger zone */}
+        <div className="p-5 rounded-2xl border border-red-500/20 bg-red-500/5">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle size={15} className="text-red-400" />
+            <h2 className="text-sm font-bold text-red-400">{t.dangerZone}</h2>
+          </div>
+          <p className="text-xs text-slate-500 mb-4">{t.clearAllHint}</p>
+          {!confirmClear ? (
+            <button
+              onClick={() => setConfirmClear(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-semibold hover:bg-red-500/20 transition-all"
+            >
+              <Trash2 size={15} />
+              {t.clearAll}
+            </button>
+          ) : (
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleClearAll}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-all"
+              >
+                <AlertTriangle size={15} />
+                {t.clearConfirm}
+              </button>
+              <button
+                onClick={() => setConfirmClear(false)}
+                className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm font-semibold hover:bg-white/10 transition-all"
+              >
+                {t.clearCancel}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

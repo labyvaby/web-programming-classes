@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import IntensivesPage from './pages/IntensivesPage';
@@ -18,10 +18,21 @@ const PrivacyPage      = lazy(() => import('./pages/docs/PrivacyPage'));
 const LegalPage        = lazy(() => import('./pages/docs/LegalPage'));
 const NotFoundPage     = lazy(() => import('./pages/NotFoundPage'));
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <I18nProvider>
       <Router>
+        <ScrollToTop />
         <div className="flex flex-col min-h-screen font-sans selection:bg-primary/30">
           <Header />
           <main className="flex-1">

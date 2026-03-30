@@ -26,3 +26,12 @@ export function isYouTubeUrl(url: string): boolean {
     return false;
   }
 }
+
+export function toYouTubeSearchEmbedUrl(query: string): string {
+  const normalized = query
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const encoded = encodeURIComponent(normalized || 'web development tutorial');
+  return `https://www.youtube.com/embed?listType=search&list=${encoded}`;
+}

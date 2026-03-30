@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X, User, Plus } from 'lucide-react';
+import { Menu, X, User, Plus, ChevronDown, Check } from 'lucide-react';
 import { useI18n, type Language } from '../../i18n';
 
-const languageOptions: Array<{ value: Language; label: string }> = [
-  { value: 'kg', label: 'кыргызский' },
-  { value: 'ru', label: 'ру' },
-  { value: 'en', label: 'en' },
+const languageOptions: Array<{ value: Language; label: string; code: string }> = [
+  { value: 'kg', label: 'Кыргызча', code: 'KG' },
+  { value: 'ru', label: 'Русский', code: 'RU' },
+  { value: 'en', label: 'English', code: 'EN' },
 ];
 
 const content = {
@@ -47,40 +47,77 @@ const content = {
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const { language, setLanguage } = useI18n();
 
   const t = content[language];
+  const activeLanguage = languageOptions.find((option) => option.value === language) ?? languageOptions[1];
 
-  const LanguageSwitch = ({ mobile = false }: { mobile?: boolean }) => (
+  useEffect(() => {
+    const onDocumentClick = (event: MouseEvent) => {
+      if (!dropdownRef.current?.contains(event.target as Node)) {
+        setIsLanguageOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', onDocumentClick);
+    return () => document.removeEventListener('mousedown', onDocumentClick);
+  }, []);
+
+  const LanguageDropdown = ({ mobile = false }: { mobile?: boolean }) => (
     <div
-      className={`inline-flex items-center rounded-xl border border-white/10 bg-white/[0.03] p-1 ${
-        mobile ? 'w-full' : ''
-      }`}
-      role="tablist"
-      aria-label="Language switcher"
+      ref={dropdownRef}
+      className={`relative ${mobile ? 'w-full' : 'w-[132px]'}`}
     >
-      {languageOptions.map((option) => {
-        const isActive = language === option.value;
+      <button
+        type="button"
+        onClick={() => setIsLanguageOpen((prev) => !prev)}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.03] text-sm font-semibold text-slate-200 hover:bg-white/[0.06] transition-all"
+        aria-haspopup="menu"
+        aria-expanded={isLanguageOpen}
+        aria-label="Language selector"
+      >
+        <span className="text-xs tracking-wider text-white">{activeLanguage.code}</span>
+        <ChevronDown
+          size={15}
+          className={`text-slate-400 transition-transform duration-200 ${isLanguageOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
 
-        return (
-          <button
-            key={option.value}
-            type="button"
-            role="tab"
-            aria-selected={isActive}
-            onClick={() => setLanguage(option.value)}
-            className={`relative min-w-0 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-sm font-semibold rounded-lg transition-all duration-300 ${
-              mobile ? 'flex-1' : ''
-            } ${
-              isActive
-                ? 'text-white bg-gradient-to-r from-primary to-primary-dark shadow-glow-sm'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <span className="block truncate">{option.label}</span>
-          </button>
-        );
-      })}
+      {isLanguageOpen && (
+        <div
+          className={`absolute z-50 mt-2 w-full rounded-xl border border-white/10 bg-card/95 backdrop-blur-xl shadow-glow-sm overflow-hidden ${
+            mobile ? 'left-0 top-full' : 'left-0 top-full'
+          }`}
+          role="menu"
+          aria-label="Language options"
+        >
+          {languageOptions.map((option) => {
+            const isActive = language === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  setLanguage(option.value);
+                  setIsLanguageOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm transition-colors ${
+                  isActive
+                    ? 'bg-primary/15 text-primary-light'
+                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                }`}
+                role="menuitemradio"
+                aria-checked={isActive}
+              >
+                <span>{option.label}</span>
+                {isActive ? <Check size={14} /> : null}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 
@@ -119,18 +156,18 @@ export default function Header() {
           </nav>
 
           {/* Desktop actions */}
-          <div className="hidden md:flex items-center gap-2">
-            <LanguageSwitch />
+          <div className="hidden md:flex w-[360px] items-center justify-end gap-2">
+            <LanguageDropdown />
             <Link
               to="/add-course"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 font-medium transition-all"
+              className="flex w-[112px] items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 font-medium transition-all"
             >
               <Plus size={16} />
               <span>{t.add}</span>
             </Link>
             <Link
               to="/profile"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white text-sm font-semibold shadow-glow-sm hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
+              className="flex w-[132px] items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white text-sm font-semibold shadow-glow-sm hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
             >
               <User size={16} />
               <span>{t.cabinet}</span>
@@ -151,7 +188,7 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-card/95 backdrop-blur-xl border-b border-white/8 p-4 space-y-1">
           <div className="pb-3">
-            <LanguageSwitch mobile />
+            <LanguageDropdown mobile />
           </div>
           {t.nav.map((link) => (
             <NavLink
